@@ -1,0 +1,16 @@
+node_modules
+.env
+coverage
+coverage.json
+typechain
+typechain-types
+node.json
+
+# Forge files
+out/
+cache/
+broadcast/
+
+
+# Apple Mac files
+.DS_Store

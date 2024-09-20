@@ -1,0 +1,549 @@
+// Copyright (c) Peter Robinson 2024
+// SPDX-License-Identifier: MIT
+
+// TODO the code below causes a revert.
+
+// Code that executes block hash 100 times in a row, and then if there is enough gas, loops around
+// and does it again.
+//
+// If you change the code and there are compilation issues, compile the code separately 
+// from the test system to understand what is happening.
+// huffc -r -p src/BlockHash2.huff
+//
+// Assuming each loop takes 4322 gas, in a 30M gas block, the loop should run 6941 times.
+// That would be 694,100 keccak256s per block.
+
+#define function run() nonpayable returns ()
+
+
+// Gas cost blockhash: 
+// 3   dup1
+// 20  blockhash
+// 2   pop
+// TOTAL: 25 gas
+
+// Gas code doing loop:
+// 3   dup2
+// 2   gas
+// 3   gt
+// 3   push2   for the target address
+// 10  jumpi
+// 1   jumpdest
+// TOTAL: 22
+#define macro MAIN() = takes(0) returns(0) {
+    0x1100                  // Amount of gas before stopping. 100 x 43 + a bit more.
+    blocknumber
+    0x100
+    sub                     // Push blocknumber - 256 onto the stack
+
+loop:
+    // 1
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 2
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 3
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 4
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 5
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 6
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 7
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 8
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 9 
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 10
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 11
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 12
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 13
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 14
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 15
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 16
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 17
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 18
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 19
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 20
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 21
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 22
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 23
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 24
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 25
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 26
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 27
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 28
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 29 
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 30
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 31
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 32
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 33
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 34
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 35
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 36
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 37
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 38
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 39
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 40
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 41
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 42
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 43
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 44
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 45
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 46
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 47
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 48
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 49 
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 50
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 51
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 52
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 53
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 54
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 55
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 56
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 57
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 58
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 59
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 60
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 61
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 62
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 63
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 64
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 65
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 66
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 67
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 68
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 69 
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 70
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 71
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 72
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 73
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 74
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 75
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 76
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 77
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 78
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 79
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 80
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 81
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 82
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 83
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 84
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 85
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 86
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 87
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 88
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 89 
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 90
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 91
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 92
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 93
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 94
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 95
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 96
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 97
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 98
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 99
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+    // 100
+    dup1                    // Make a copy of blocknumber-256
+    blockhash
+    pop                     // Pop off the stack the result of blockhash
+
+
+
+
+
+    dup2                    // Put gas before stopping at the top of the stack
+    gas                     // Work out how much gas is remaining
+    gt                      // Compare
+    loop jumpi              // If gas used < gas to use, loop around again
+    stop
+}
