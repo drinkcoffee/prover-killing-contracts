@@ -11,13 +11,18 @@ zkRollups typically protect their rollup against *prover killing transaction* at
 
 Each of the contracts should be viewed in conjunction with the associated test code. The test code should be used as a guide as to how to use the contracts.
 
-| Contract         | Description    |
-|------------------|-----------------------|
-|Keccak256Me.sol   | Call keccak256 as many times as possible in a block.  |
-|Storage.sol       | Uses the Merkle Patricia Trie to generate many keccak256s when loading storage. |
-|Pairing.sol       | Use the EC Pairing precompile across many points. |
-|BlockHash.sol     | Request historic block hashes. |
-|ModExp.sol        | Modular exponentiation. |
+| Contract         | Description                              | Immutable zkEVM Testnet  | Linea Mainnet| Scroll Mainnet |
+|------------------|------------------------------------------|--------------------|---|---|
+|Keccak256Me.sol   | Call Keccak256 many times.               |  | [0x000306a86590cd20e37229994b013eb02c7bb239](https://lineascan.build/address/0x000306a86590cd20e37229994b013eb02c7bb239) | [0x12497cb12a2180964d7c080379cdfdc829dd61de](https://scrollscan.com/address/0x12497cb12a2180964d7c080379cdfdc829dd61de) |
+|Pairing.sol       | EC Pairing precompile across many points. | [0x4062AD62E9b669804Db76d7646e0a2b153E148e8](https://explorer.testnet.immutable.com/address/0x4062AD62E9b669804Db76d7646e0a2b153E148e8) | [0x8283461de0c8226e8b670255ad483628f077927b](https://lineascan.build/address/0x8283461de0c8226e8b670255ad483628f077927b) | |
+|Storage.sol       | Load storage many times.        | [0x221e15e555c22e92762352d19C90Aa605bD6c689](https://explorer.testnet.immutable.com/address/0x221e15e555c22e92762352d19C90Aa605bD6c689) | | |
+|BlockHash.sol     | Request historic block hashes. | | | |
+|ModExp.sol        | Modular exponentiation.                   | | | |
+
+
+Notes:
+* Storage: The theory was that calling sstore many times would generate many keccak256 calls as part of the Merkle Patricia Trie load.
+
 
 Future work:
 * Hash a very large amount of data.
