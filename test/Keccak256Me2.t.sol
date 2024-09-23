@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {Test, console} from "forge-std/Test.sol";
-import {Keccak256Me2Deploy} from "../src/Keccak256Me2Deploy.sol";
+import {Keccak256Me2Deploy} from "../src/huff/Keccak256Me2Deploy.sol";
 
 interface Keccak256Me2 {
   function run() external;
