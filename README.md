@@ -19,6 +19,7 @@ Each of the contracts should be viewed in conjunction with the associated test c
 |[Storage.sol](./src/Storage.sol)       | Load storage many times.        | [0x221e15e555c22e92762352d19C90Aa605bD6c689](https://explorer.testnet.immutable.com/address/0x221e15e555c22e92762352d19C90Aa605bD6c689) | | |
 |[BlockHash.sol](./src/BlockHash.sol)     | Request historic block hashes. | | | |
 |[ModExp.sol](./src/ModExp.sol)        | Modular exponentiation.                   | | | |
+|[Storage3Manager.sol](./src/Storage3Manager.sol) | Enhanced storage test | [0x87c4111bebf0991fe74a46836c4e00473ec44a93](https://explorer.testnet.immutable.com/address/0x87c4111bebf0991fe74a46836c4e00473ec44a93) | | | |
 
 
 Notes:
