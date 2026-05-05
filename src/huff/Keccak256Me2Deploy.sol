@@ -1,6 +1,6 @@
 // Copyright (c) Peter Robinson 2024
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 
 
 import {ArbitraryDeploy} from "./ArbitraryDeploy.sol";

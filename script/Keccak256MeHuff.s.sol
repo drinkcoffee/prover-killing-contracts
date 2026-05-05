@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 
 import "forge-std/Script.sol";
 import {Keccak256Me2Deploy} from "../src/huff/Keccak256Me2Deploy.sol";
