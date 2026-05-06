@@ -76,3 +76,15 @@ To build with Huff:
 ```shell
 $ huffc src/huff/Keccak256Me2.huff  --bin-runtime
 ```
+
+
+
+
+### C# Code Generation:
+
+Following the instructions here: [https://docs.nethereum.com/en/latest/nethereum-codegen-vscodesolidity/#step-2-single-contract](https://docs.nethereum.com/en/latest/nethereum-codegen-vscodesolidity/#step-2-single-contract). That is:
+
+* Build the code using `forge build`.
+* Open Visual Studio Code and select `./out/AContract.sol/AContract.json
+* In Visual Studio Code, use Command-Shift-P to open the command pallete, and choose `Solidity: Code generate CSharp from contract definition`.
+* Files will be written to `./gen/AContract`.

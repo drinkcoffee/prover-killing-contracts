@@ -1,0 +1,8 @@
+{
+    "projectName": "LoadTest",
+    "namespace": "LoadTest",
+    "lang":0,
+    "autoCodeGen":true,
+    "projectPath": "./gen"
+}
+
