@@ -2,15 +2,15 @@
 pragma solidity ^0.8.13;
 
 import {Test, console} from "forge-std/Test.sol";
-import {Storage3Manager} from "../src/Storage3Manager.sol";
+import {Storage4Manager} from "../src/Storage4Manager.sol";
 
-contract Storage3ManagerTest is Test {
+contract Storage4ManagerTest is Test {
     event Result(uint256 _val);
 
-    Storage3Manager public store;
+    Storage4Manager public store;
 
     function setUp() public {
-        store = new Storage3Manager();
+        store = new Storage4Manager();
 
 
         // Fill enough locations to cover loadCold test case.
@@ -20,7 +20,7 @@ contract Storage3ManagerTest is Test {
     }
 
     function testColdStore() public {
-        store.storeCold(1000);
+        store.storeCold(1000, 1);
     }
 
     // This won't give correct results for the test code as the locations will be host.
