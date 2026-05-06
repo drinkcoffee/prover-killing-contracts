@@ -8,7 +8,7 @@ import {Storage3Manager} from "../src/Storage3Manager.sol";
 
 contract AllScript is Script {
     uint256 private constant CONTRACT_BATCH_SIZE = 10;
-    uint256 private constant TOTAL_CONTRACTS = 10000;
+    uint256 private constant TOTAL_CONTRACTS = 5000;
     uint256 private constant ITERATIONS = TOTAL_CONTRACTS / CONTRACT_BATCH_SIZE;
 
     function deployStorage3Manager() public {
@@ -43,7 +43,8 @@ contract AllScript is Script {
         address[] memory storeContracts = storage3Manager.getContracts(0, TOTAL_CONTRACTS);
 
         // Deploy lots of contracts for cold storage and cold load tests
-        for (uint256 i = 0; i < TOTAL_CONTRACTS; i++) {
+//        for (uint256 i = 0; i < TOTAL_CONTRACTS; i++) {
+        for (uint256 i = 0; i < 1; i++) {
             vm.broadcast();
             Storage3(storeContracts[i]).fillUpStorage();
         }
