@@ -5,6 +5,7 @@ pragma solidity ^0.8;
 import {Script, console} from "forge-std/Script.sol";
 import {Storage3} from "../src/Storage3.sol";
 import {Storage3Manager} from "../src/Storage3Manager.sol";
+import {Storage4Manager} from "../src/Storage4Manager.sol";
 
 contract AllScript is Script {
     uint256 private constant CONTRACT_BATCH_SIZE = 10;
@@ -70,6 +71,14 @@ contract AllScript is Script {
             vm.broadcast();
             storage3Manager.storeCold(1000);
         }
+    }
+
+
+    function deployStorage4Manager() public {
+        //address deployer = vm.envAddress("DEPLOYER_ADDRESS");
+        vm.broadcast();
+        Storage4Manager impl = new Storage4Manager();
+        console.log("Implementation address: ", address(impl));
     }
 
 

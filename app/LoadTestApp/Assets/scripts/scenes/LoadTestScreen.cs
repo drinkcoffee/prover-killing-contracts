@@ -56,9 +56,9 @@ namespace LoadTest {
                 return;
             }
 
-            if (buttonText == "SeedStatus")
+            if (buttonText == "Deploy")
             {
-                Invoke("RunSeedProcess", 0.1f);
+                Invoke("Deploy", 0.1f);
             }
             else
             {
@@ -67,17 +67,17 @@ namespace LoadTest {
         }
 
 
-        private async Task RunSeedProcess() {
+        private async Task Deploy() {
             isProcessing = true;
             try {
                 resetLog();
-                // log("RunSeedProcess: started");
+                log("DeployProcess: started");
 
-                // SeedWordProcessor seedProcessorContract = new SeedWordProcessor();
-                // uint seedWordCount = await seedProcessorContract.SeedWordCount();
-                // log($"Seed word count is: {seedWordCount}");
+                Storage4ManagerProcessor storage4ManagerProcessorContract = new Storage4ManagerProcessor();
+                bool ok = await storage4ManagerProcessorContract.Deploy(1);
+                log($"Execution ok:  {ok}");
 
-                log("RunSeedProcess: done");
+                log("DeployProcess: done");
             }
             catch (Exception ex) {
                 log($"Exception during admin process: {ex.Message}");

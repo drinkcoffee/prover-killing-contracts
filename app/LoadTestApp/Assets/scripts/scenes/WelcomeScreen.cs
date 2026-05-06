@@ -30,7 +30,7 @@ namespace LoadTest {
                    {
                         PassportStore.SetLoggedInChecked();
                         DeepLinkManager.Instance.LoginPath = DeepLinkManager.WELCOME;
-                        SceneManager.LoadScene("MenuScene", LoadSceneMode.Single);
+                        SceneManager.LoadScene("LoadTestScene", LoadSceneMode.Single);
                     }
                     else
                     {

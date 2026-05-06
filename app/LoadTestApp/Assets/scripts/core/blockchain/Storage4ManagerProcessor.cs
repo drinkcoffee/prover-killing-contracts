@@ -25,21 +25,21 @@ namespace LoadTest {
 
         private Storage4ManagerService service;
 
-        public const string CHECK_IN_CONTRACT = "0x7e70b51a3090753593aaafedf26536ed2cbc26e8";
+        public const string CONTRACT = "0x274a67578ffdbbca5c600a694fe59f57fb8a043a";
 
-        public Storage4ManagerProcessor() : base(CHECK_IN_CONTRACT) {
+        public Storage4ManagerProcessor() : base(CONTRACT) {
             var web3 = new Web3(RPC_URL);
             service = new Storage4ManagerService(web3, contractAddress);
         }
 
 
-        // public async Task<bool> SubmitCheckIn(uint gameDay) {
-        //     var func = new CheckInFunction() {
-        //         GameDay = gameDay,
-        //     };
-        //     var (success, _) = await executeTransaction(func.GetCallData());
-        //     return success;
-        // }
+        public async Task<bool> Deploy(uint numToDeploy) {
+            var func = new DeployFunction() {
+                Iteration = numToDeploy,
+            };
+            var (success, _) = await executeTransaction(func.GetCallData());
+            return success;
+        }
 
     }
 }
