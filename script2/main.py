@@ -38,7 +38,7 @@ def load_config():
         else:
             rpc = "https://rpc.testnet.immutable.com"
 
-    storage3manager = os.environ.get("STORAGE3MANAGER")
+    storage3manager = os.environ.get("STORAGE4MANAGER")
     return private_key, rpc, storage3manager
 
 

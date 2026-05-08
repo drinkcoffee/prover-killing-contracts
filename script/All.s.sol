@@ -81,5 +81,21 @@ contract AllScript is Script {
         console.log("Implementation address: ", address(impl));
     }
 
+    // Run 1000 times to deploy 10,000 contracts
+    function storage4TestInitPart1() public {
+        address storage4ManagerAddr = vm.envAddress("STORAGE4MANAGER");
+        Storage4Manager storage4Manager = Storage4Manager(storage4ManagerAddr);
+
+        // Deploy lots of contracts for cold storage and cold load tests
+        // for (uint256 i = 0; i < ITERATIONS; i++) {
+        //     vm.broadcast();
+        //     storage3Manager.deploy(CONTRACT_BATCH_SIZE);
+        // }
+        for (uint256 i = 0; i < 1; i++) {
+            vm.broadcast();
+            storage4Manager.deploy(CONTRACT_BATCH_SIZE);
+        }
+
+    }
 
 }

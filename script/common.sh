@@ -70,26 +70,26 @@ then
         --hd-paths "$LEDGER_HD_PATH" \
         script/All.s.sol:AllScript
 else
-#    forge script --rpc-url $RPC \
-#        --priority-gas-price 10000000000 \
-#        --with-gas-price     10000000100 \
-#        -vvv \
-#        --broadcast \
-#        --skip-simulation \
-#        --sig "$FUNCTION_TO_EXECUTE" \
-#        --private-key $PRIVATE_KEY \
-#        script/All.s.sol:AllScript
-
-
     forge script --rpc-url $RPC \
-         --priority-gas-price 10000000000 \
+        --priority-gas-price 10000000000 \
         --with-gas-price     10000000100 \
         -vvv \
         --broadcast \
-        --verify \
-        --verifier blockscout \
-        --verifier-url $BLOCKSCOUT_URI$BLOCKSCOUT_APIKEY \
+        --skip-simulation \
         --sig "$FUNCTION_TO_EXECUTE" \
         --private-key $PRIVATE_KEY \
         script/All.s.sol:AllScript
+
+
+#    forge script --rpc-url $RPC \
+#         --priority-gas-price 10000000000 \
+#        --with-gas-price     10000000100 \
+#        -vvv \
+#        --broadcast \
+#        --verify \
+#        --verifier blockscout \
+#        --verifier-url $BLOCKSCOUT_URI$BLOCKSCOUT_APIKEY \
+#        --sig "$FUNCTION_TO_EXECUTE" \
+#        --private-key $PRIVATE_KEY \
+#        script/All.s.sol:AllScript
 fi

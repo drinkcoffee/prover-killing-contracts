@@ -1,5 +1,5 @@
 #!/bin/bash
-FUNCTION_TO_EXECUTE='storag4TestInitPart1()'
+FUNCTION_TO_EXECUTE='storage4TestInitPart1()'
 # run 100 times
 source $(dirname "$0")/common.sh
 source $(dirname "$0")/common.sh
