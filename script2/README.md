@@ -84,7 +84,7 @@ python main.py storeCold --iteration <iteration> --val <val>
 **Example:**
 
 ```bash
-python main.py storeCold --iteration 0 --val 42
+python main.py storeCold --iteration 1000 --val 42
 ```
 
 The script prints the transaction hash on success and exits with a non-zero status on failure.
