@@ -33,6 +33,30 @@ The RPC endpoint is resolved in this order:
 
 ## Commands
 
+### storageTestInitPart1
+
+Calls `deploy(uint256 _batchSize)` on the Storage4Manager contract to deploy a batch of Storage4 contracts.
+
+```bash
+python main.py storageTestInitPart1 --batch-size <batchSize>
+```
+
+**Parameters:**
+
+| Parameter | Description |
+|---|---|
+| `--batch-size` | Number of Storage4 contracts to deploy in this batch |
+
+**Example:**
+
+```bash
+python main.py storageTestInitPart1 --batch-size 150
+```
+
+The script prints the transaction hash on success and exits with a non-zero status on failure.
+
+Deploying 150 contracts uses 28,203,256 gas.
+
 ### storageTestInitPart2
 
 Calls `fillUpStorage()` on a range of Storage3 contracts managed by Storage3Manager.
