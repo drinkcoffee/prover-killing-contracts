@@ -1,6 +1,4 @@
-# script2
-
-Python CLI for interacting with Storage4Manager contracts.
+# Python CLI for interacting with Storage4Manager
 
 ## Setup
 
