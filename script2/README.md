@@ -12,6 +12,13 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+To deactivate the virtual environment:
+
+```bash
+deactivate
+```
+
+
 ## Configuration
 
 The script reads from the `.env` file in the project root. The following variables are required:

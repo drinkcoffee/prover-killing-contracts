@@ -25,43 +25,15 @@ Each of the contracts should be viewed in conjunction with the associated test c
 Notes:
 * Storage: The theory was that calling sstore many times would generate many keccak256 calls as part of the Merkle Patricia Trie load.
 
-
-Future work:
-* Create a very large transaction receipt / lots of events / logs.
-* Create lots of transactions with lots of receipts.
-* Transaction with a lot of very low gas cost transactions, and hence a very long trace.
-* Max out recursive call tree.
-
-
-## Usage
-
-### Set-up
-Install:
-
-* Foundry
-
-
-### Build
+## Foundry Tests and Scripts
 
 ```shell
 $ forge build
-```
-
-### Test
-
-```shell
 $ forge test -vvv
 ```
 
-### Scripts
 Deploy the contracts using the `deployXXXX.sh` scripts. Execute functions using the `runXXX.sh` scripts.
 
-
-### Format
-
-```shell
-$ forge fmt
-```
 
 ## Huff
 
@@ -77,9 +49,7 @@ To build with Huff:
 $ huffc src/huff/Keccak256Me2.huff  --bin-runtime
 ```
 
-
-
-
+## Unity App
 ### C# Code Generation:
 
 Following the instructions here: [https://docs.nethereum.com/en/latest/nethereum-codegen-vscodesolidity/#step-2-single-contract](https://docs.nethereum.com/en/latest/nethereum-codegen-vscodesolidity/#step-2-single-contract). That is:
@@ -88,3 +58,7 @@ Following the instructions here: [https://docs.nethereum.com/en/latest/nethereum
 * Open Visual Studio Code and select `./out/AContract.sol/AContract.json
 * In Visual Studio Code, use Command-Shift-P to open the command pallete, and choose `Solidity: Code generate CSharp from contract definition`.
 * Files will be written to `./gen/AContract`.
+
+## Python App for use with Storage4Manager
+
+See the [app's readme file](./script2/README.md).
