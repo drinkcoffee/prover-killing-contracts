@@ -1,6 +1,6 @@
 # script2
 
-Python CLI for interacting with Storage3Manager contracts.
+Python CLI for interacting with Storage4Manager contracts.
 
 ## Setup
 
@@ -19,7 +19,7 @@ The script reads from the `.env` file in the project root. The following variabl
 | Variable | Description |
 |---|---|
 | `PRIVATE_KEY` | Private key of the transaction sender |
-| `STORAGE3MANAGER` | Deployed address of the Storage3Manager contract |
+| `STORAGE4MANAGER` | Deployed address of the Storage4Manager contract |
 
 The RPC endpoint is resolved in this order:
 1. `RPC` variable in `.env` (if set)
@@ -58,3 +58,26 @@ python main.py storageTestInitPart2 --offset 100 --iterations 100
 ```
 
 The script prints the transaction hash for each contract as it is processed and exits with a non-zero status on the first failure.
+
+### storeCold
+
+Calls `storeCold(uint256 _iteration, uint256 _val)` on the Storage4Manager contract.
+
+```bash
+python main.py storeCold --iteration <iteration> --val <val>
+```
+
+**Parameters:**
+
+| Parameter | Description |
+|---|---|
+| `--iteration` | Value to pass as `_iteration` |
+| `--val` | Value to pass as `_val` |
+
+**Example:**
+
+```bash
+python main.py storeCold --iteration 0 --val 42
+```
+
+The script prints the transaction hash on success and exits with a non-zero status on failure.
