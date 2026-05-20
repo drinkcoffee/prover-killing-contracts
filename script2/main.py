@@ -24,6 +24,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from eth_account import Account
+from web3 import Web3
 
 SPEND_AMOUNT_WEI = 500_000_000_000_000_000  # 0.5 IMX
 TX_COST_WEI = 500_000_000_000_000  # 0.0005 IMX
@@ -177,6 +178,44 @@ def store_cold(rpc: str, private_key: str, storageManager: str, iteration: int, 
         if line.startswith("transactionHash"):
             return line.split()[-1]
     return result.stdout.strip()
+
+
+def sign_store_cold(rpc: str, private_key: str, storage_manager: str, iteration: int, val: int) -> str:
+    result = subprocess.run(
+        [
+            "cast", "mktx",
+            "--rpc-url", rpc,
+            "--private-key", private_key,
+            "--priority-gas-price", "10000000000",
+            "--gas-price", "10000000100",
+            "--nonce", "0",
+            "--gas-limit", "30000000",
+            storage_manager,
+            "storeCold(uint256,uint256)",
+            str(iteration),
+            str(val),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip())
+    return result.stdout.strip()
+
+
+def batch_submit_signed_txs(rpc: str, signed_txs: list[str]) -> list[tuple[str | None, str | None]]:
+    w3 = Web3(Web3.HTTPProvider(rpc))
+    with w3.batch_requests() as batch:
+        for signed_tx in signed_txs:
+            batch.add(w3.eth.send_raw_transaction(signed_tx))
+        responses = batch.execute()
+    results = []
+    for response in responses:
+        if isinstance(response, Exception):
+            results.append((None, str(response)))
+        else:
+            results.append((response.hex(), None))
+    return results
 
 
 def cmd_store_cold(iteration: int, val: int) -> None:
@@ -339,24 +378,40 @@ def cmd_bulk_store_cold(scale: int, iterations: int, val: int) -> None:
     results: list[tuple[str | None, str | None]] = [None] * scale
 
     if action == "Y":
-        print(f"Submitting {scale} storeCold transactions in parallel...")
+        # Phase 1: sign all transactions in parallel (staggered to avoid RPC rate limits)
+        print(f"Signing {scale} storeCold transactions...")
+        signed_txs: list[str | None] = [None] * scale
+        sign_errors: list[str | None] = [None] * scale
 
-        def worker(idx: int, pk: str) -> None:
+        def sign_worker(idx: int, pk: str) -> None:
             try:
-                tx = _with_retry(store_cold, rpc, pk, storage_manager, iterations, val + idx)
-                results[idx] = (tx, None)
+                signed_txs[idx] = _with_retry(sign_store_cold, rpc, pk, storage_manager, iterations, val + idx)
             except RuntimeError as e:
-                results[idx] = (None, str(e))
+                sign_errors[idx] = str(e)
 
-        threads = [threading.Thread(target=worker, args=(i, accounts[i][0])) for i in range(scale)]
-        for i, t in enumerate(threads):
-            if i > 0:
-                time.sleep(2)
-            print(f"\r  Launching thread {i + 1} of {scale}...", end="", flush=True)
+        sign_threads = [threading.Thread(target=sign_worker, args=(i, accounts[i][0])) for i in range(scale)]
+        for i, t in enumerate(sign_threads):
+            print(f"\r  Signing {i + 1} of {scale}...", end="", flush=True)
             t.start()
-        print(f"\r  All {scale} threads launched.   ")
-        for t in threads:
+        for t in sign_threads:
             t.join()
+        print(f"\r  All {scale} transactions signed.   ")
+        print()
+
+        # Phase 2: submit all signed transactions as a single JSON-RPC batch
+        for i in range(scale):
+            if signed_txs[i] is None:
+                results[i] = (None, sign_errors[i])
+
+        valid_indices = [i for i in range(scale) if signed_txs[i] is not None]
+        valid_signed = [signed_txs[i] for i in valid_indices]
+
+        if valid_signed:
+            print(f"Submitting {len(valid_signed)} transactions as a batch...", flush=True)
+            batch_results = batch_submit_signed_txs(rpc, valid_signed)
+            for j, (tx, err) in enumerate(batch_results):
+                results[valid_indices[j]] = (tx, err)
+            print("Batch submitted.")
 
         print()
         print("Results:")
