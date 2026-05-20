@@ -319,6 +319,19 @@ def sign_transfer_imx(rpc: str, private_key: str, to: str, amount_wei: int, nonc
     return result.stdout.strip()
 
 
+def wait_for_tx_confirmed(rpc: str, tx_hash: str) -> None:
+    while True:
+        payload = json.dumps({
+            "jsonrpc": "2.0", "method": "eth_getTransactionReceipt",
+            "params": [tx_hash], "id": 1,
+        }).encode()
+        req = urllib.request.Request(rpc, data=payload, headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            if json.loads(resp.read()).get("result") is not None:
+                return
+        time.sleep(1)
+
+
 def batch_get_balances_and_nonces(rpc: str, addresses: list[str]) -> list[tuple[int, int]]:
     payload = []
     for i, addr in enumerate(addresses):
@@ -506,8 +519,8 @@ def cmd_bulk_store_cold(scale: int, iterations: int, val: int) -> None:
                 print(f"       {err}", file=sys.stderr)
         print()
 
-    print("Pausing 30 seconds before returning funds...")
-    for remaining in range(30, 0, -1):
+    print("Pausing 10 seconds before returning funds...")
+    for remaining in range(10, 0, -1):
         print(f"\r  {remaining:2d}s remaining...", end="", flush=True)
         time.sleep(1)
     print("\r  Done.              ")
@@ -518,6 +531,12 @@ def cmd_bulk_store_cold(scale: int, iterations: int, val: int) -> None:
         if i > 0:
             time.sleep(0.5)
         try:
+            store_tx_hash = results[i][0] if results[i] is not None else None
+            if store_tx_hash:
+                print(f"  [{i}] waiting for storeCold tx to confirm...", end=" ", flush=True)
+                wait_for_tx_confirmed(rpc, store_tx_hash)
+                print("confirmed.")
+
             bal = get_balance_wei(rpc, addr)
             if bal <= TX_COST_WEI:
                 print(f"  {addr}: balance too low ({bal} wei), skipping")
