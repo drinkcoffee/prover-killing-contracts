@@ -18,6 +18,7 @@ import subprocess
 import sys
 import termios
 import threading
+import time
 import tty
 from pathlib import Path
 
@@ -267,6 +268,16 @@ def read_key(prompt: str, valid: set[str]) -> str:
         termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
 
+def _with_retry(fn, *args, max_retries: int = 4, base_delay: float = 2.0):
+    for attempt in range(max_retries + 1):
+        try:
+            return fn(*args)
+        except RuntimeError as e:
+            if attempt == max_retries or "429" not in str(e):
+                raise
+            time.sleep(base_delay * (2 ** attempt))
+
+
 def cmd_bulk_store_cold(scale: int, iterations: int, val: int) -> None:
     private_key, rpc, storage_manager = load_config()
 
@@ -310,7 +321,7 @@ def cmd_bulk_store_cold(scale: int, iterations: int, val: int) -> None:
     for pk, addr in accounts:
         print(f"  → {addr} ...", end=" ", flush=True)
         try:
-            tx = transfer_imx(rpc, private_key, addr, SPEND_AMOUNT_WEI)
+            tx = _with_retry(transfer_imx, rpc, private_key, addr, SPEND_AMOUNT_WEI)
             print(f"ok  {tx}")
         except RuntimeError as e:
             print("FAILED")
@@ -332,13 +343,15 @@ def cmd_bulk_store_cold(scale: int, iterations: int, val: int) -> None:
 
         def worker(idx: int, pk: str) -> None:
             try:
-                tx = store_cold(rpc, pk, storage_manager, iterations, val + idx)
+                tx = _with_retry(store_cold, rpc, pk, storage_manager, iterations, val + idx)
                 results[idx] = (tx, None)
             except RuntimeError as e:
                 results[idx] = (None, str(e))
 
         threads = [threading.Thread(target=worker, args=(i, accounts[i][0])) for i in range(scale)]
-        for t in threads:
+        for i, t in enumerate(threads):
+            if i > 0:
+                time.sleep(1)
             t.start()
         for t in threads:
             t.join()
@@ -366,7 +379,7 @@ def cmd_bulk_store_cold(scale: int, iterations: int, val: int) -> None:
                 continue
             return_amount = bal - TX_COST_WEI
             print(f"  ← {addr}  {return_amount / 1e18:.6f} IMX ...", end=" ", flush=True)
-            tx = transfer_imx(rpc, pk, home_addr, return_amount)
+            tx = _with_retry(transfer_imx, rpc, pk, home_addr, return_amount)
             print(f"ok  {tx}")
         except RuntimeError as e:
             print(f"FAILED: {e}", file=sys.stderr)
