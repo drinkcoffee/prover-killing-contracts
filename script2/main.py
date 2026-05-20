@@ -351,8 +351,10 @@ def cmd_bulk_store_cold(scale: int, iterations: int, val: int) -> None:
         threads = [threading.Thread(target=worker, args=(i, accounts[i][0])) for i in range(scale)]
         for i, t in enumerate(threads):
             if i > 0:
-                time.sleep(1)
+                time.sleep(2)
+            print(f"\r  Launching thread {i + 1} of {scale}...", end="", flush=True)
             t.start()
+        print(f"\r  All {scale} threads launched.   ")
         for t in threads:
             t.join()
 
@@ -369,6 +371,13 @@ def cmd_bulk_store_cold(scale: int, iterations: int, val: int) -> None:
                 print(f"  [{i}] FAIL {addr}")
                 print(f"       {err}", file=sys.stderr)
         print()
+
+    print("Pausing 30 seconds before returning funds...")
+    for remaining in range(30, 0, -1):
+        print(f"\r  {remaining:2d}s remaining...", end="", flush=True)
+        time.sleep(1)
+    print("\r  Done.              ")
+    print()
 
     print("Returning remaining funds to home account...")
     for pk, addr in accounts:
