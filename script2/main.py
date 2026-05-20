@@ -285,6 +285,52 @@ def transfer_imx(rpc: str, private_key: str, to: str, amount_wei: int) -> str:
     return result.stdout.strip()
 
 
+def get_nonce(rpc: str, address: str) -> int:
+    payload = json.dumps({
+        "jsonrpc": "2.0", "method": "eth_getTransactionCount",
+        "params": [address, "pending"], "id": 1,
+    }).encode()
+    req = urllib.request.Request(rpc, data=payload, headers={"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        return int(json.loads(resp.read())["result"], 16)
+
+
+def sign_transfer_imx(rpc: str, private_key: str, to: str, amount_wei: int, nonce: int) -> str:
+    result = subprocess.run(
+        [
+            "cast", "mktx",
+            "--rpc-url", rpc,
+            "--private-key", private_key,
+            "--gas-price", str(BULK_MAX_FEE),
+            "--priority-gas-price", str(BULK_PRIORITY_FEE),
+            "--value", str(amount_wei),
+            "--nonce", str(nonce),
+            "--gas-limit", "21000",
+            to,
+        ],
+        capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip())
+    return result.stdout.strip()
+
+
+def batch_get_balances_and_nonces(rpc: str, addresses: list[str]) -> list[tuple[int, int]]:
+    payload = []
+    for i, addr in enumerate(addresses):
+        payload.append({"jsonrpc": "2.0", "method": "eth_getBalance", "params": [addr, "pending"], "id": i * 2})
+        payload.append({"jsonrpc": "2.0", "method": "eth_getTransactionCount", "params": [addr, "pending"], "id": i * 2 + 1})
+    data = json.dumps(payload).encode()
+    req = urllib.request.Request(rpc, data=data, headers={"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        responses = json.loads(resp.read())
+    responses.sort(key=lambda r: r["id"])
+    return [
+        (int(responses[i * 2]["result"], 16), int(responses[i * 2 + 1]["result"], 16))
+        for i in range(len(addresses))
+    ]
+
+
 def block_explorer_url(rpc: str, tx_hash: str) -> str:
     if "testnet" in rpc:
         return f"https://explorer.testnet.immutable.com/tx/{tx_hash}"
@@ -357,16 +403,44 @@ def cmd_bulk_store_cold(scale: int, iterations: int, val: int) -> None:
         print(f"  {addr}  {pk}")
     print()
 
-    print("Funding generated accounts...")
-    for pk, addr in accounts:
-        print(f"  → {addr} ...", end=" ", flush=True)
+    print("Funding generated accounts (batch)...")
+    home_nonce = get_nonce(rpc, home_addr)
+
+    funding_signed: list[str | None] = [None] * scale
+    funding_sign_errors: list[str | None] = [None] * scale
+
+    def fund_sign_worker(idx: int, addr: str) -> None:
         try:
-            tx = _with_retry(transfer_imx, rpc, private_key, addr, SPEND_AMOUNT_WEI)
-            print(f"ok  {tx}")
+            funding_signed[idx] = sign_transfer_imx(rpc, private_key, addr, SPEND_AMOUNT_WEI, home_nonce + idx)
         except RuntimeError as e:
-            print("FAILED")
-            print(f"     {e}", file=sys.stderr)
-            sys.exit(1)
+            funding_sign_errors[idx] = str(e)
+
+    fund_threads = [threading.Thread(target=fund_sign_worker, args=(i, accounts[i][1])) for i in range(scale)]
+    for i, t in enumerate(fund_threads):
+        print(f"\r  Signing funding {i + 1} of {scale}...", end="", flush=True)
+        t.start()
+    for t in fund_threads:
+        t.join()
+    print(f"\r  All {scale} funding transactions signed.   ")
+
+    if any(s is None for s in funding_signed):
+        for i, err in enumerate(funding_sign_errors):
+            if err:
+                print(f"  [{i}] signing failed: {err}", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"Submitting {scale} funding transactions as a batch...", flush=True)
+    fund_results = batch_submit_signed_txs(rpc, funding_signed)
+    fund_failed = False
+    for i, (tx, err) in enumerate(fund_results):
+        _, addr = accounts[i]
+        if tx:
+            print(f"  → {addr}  ok  {tx}")
+        else:
+            print(f"  → {addr}  FAILED: {err}", file=sys.stderr)
+            fund_failed = True
+    if fund_failed:
+        sys.exit(1)
     print()
 
     action = read_key("Ready. Press Y to start, S to skip, N to exit: ", {"Y", "S", "N"})
@@ -435,19 +509,35 @@ def cmd_bulk_store_cold(scale: int, iterations: int, val: int) -> None:
     print("\r  Done.              ")
     print()
 
-    print("Returning remaining funds to home account...")
-    for pk, addr in accounts:
+    print("Returning remaining funds to home account (batch)...")
+    print("  Fetching account balances and nonces...", flush=True)
+    account_addrs = [addr for _, addr in accounts]
+    balances_nonces = batch_get_balances_and_nonces(rpc, account_addrs)
+
+    refund_signed: list[str] = []
+    refund_indices: list[int] = []
+    for i, ((pk, addr), (bal, nonce)) in enumerate(zip(accounts, balances_nonces)):
+        if bal <= TX_COST_WEI:
+            print(f"  {addr}: balance too low ({bal} wei), skipping")
+            continue
+        return_amount = bal - TX_COST_WEI
+        print(f"  ← {addr}  {return_amount / 1e18:.6f} IMX  (nonce {nonce})")
         try:
-            bal = get_balance_wei(rpc, addr)
-            if bal <= TX_COST_WEI:
-                print(f"  {addr}: balance too low ({bal} wei), skipping")
-                continue
-            return_amount = bal - TX_COST_WEI
-            print(f"  ← {addr}  {return_amount / 1e18:.6f} IMX ...", end=" ", flush=True)
-            tx = _with_retry(transfer_imx, rpc, pk, home_addr, return_amount)
-            print(f"ok  {tx}")
+            signed = sign_transfer_imx(rpc, pk, home_addr, return_amount, nonce)
+            refund_signed.append(signed)
+            refund_indices.append(i)
         except RuntimeError as e:
-            print(f"FAILED: {e}", file=sys.stderr)
+            print(f"     signing failed: {e}", file=sys.stderr)
+
+    if refund_signed:
+        print(f"Submitting {len(refund_signed)} refund transactions as a batch...", flush=True)
+        refund_results = batch_submit_signed_txs(rpc, refund_signed)
+        for j, (tx, err) in enumerate(refund_results):
+            _, addr = accounts[refund_indices[j]]
+            if tx:
+                print(f"  ← {addr}  ok  {tx}")
+            else:
+                print(f"  ← {addr}  FAILED: {err}", file=sys.stderr)
     print()
     print("Done.")
 
