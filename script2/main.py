@@ -194,7 +194,7 @@ def sign_store_cold(rpc: str, private_key: str, storage_manager: str, iteration:
             "--priority-gas-price", "10000000000",
             "--gas-price", "10000000100",
             "--nonce", "0",
-            "--gas-limit", "30000000",
+            "--gas-limit", "29500000",
             storage_manager,
             "storeCold(uint256,uint256)",
             str(iteration),
