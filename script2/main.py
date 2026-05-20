@@ -185,7 +185,25 @@ def store_cold(rpc: str, private_key: str, storageManager: str, iteration: int, 
     return result.stdout.strip()
 
 
-def sign_store_cold(rpc: str, private_key: str, storage_manager: str, iteration: int, val: int) -> str:
+def estimate_gas_store_cold(rpc: str, storage_manager: str, iteration: int, val: int) -> int:
+    result = subprocess.run(
+        [
+            "cast", "estimate",
+            "--rpc-url", rpc,
+            storage_manager,
+            "storeCold(uint256,uint256)",
+            str(iteration),
+            str(val),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip())
+    return int(result.stdout.strip())
+
+
+def sign_store_cold(rpc: str, private_key: str, storage_manager: str, iteration: int, val: int, gas_limit: int) -> str:
     result = subprocess.run(
         [
             "cast", "mktx",
@@ -194,7 +212,7 @@ def sign_store_cold(rpc: str, private_key: str, storage_manager: str, iteration:
             "--priority-gas-price", "10000000000",
             "--gas-price", "10000000100",
             "--nonce", "0",
-            "--gas-limit", "29500000",
+            "--gas-limit", str(gas_limit),
             storage_manager,
             "storeCold(uint256,uint256)",
             str(iteration),
@@ -471,13 +489,18 @@ def cmd_bulk_store_cold(scale: int, iterations: int, val: int) -> None:
 
     if action == "Y":
         # Phase 1: sign all transactions in parallel (staggered to avoid RPC rate limits)
+        print(f"Estimating gas for storeCold({iterations}, {val})...", end=" ", flush=True)
+        gas_limit = estimate_gas_store_cold(rpc, storage_manager, iterations, val)
+        print(f"{gas_limit}")
+        print()
+
         print(f"Signing {scale} storeCold transactions...")
         signed_txs: list[str | None] = [None] * scale
         sign_errors: list[str | None] = [None] * scale
 
         def sign_worker(idx: int, pk: str) -> None:
             try:
-                signed_txs[idx] = _with_retry(sign_store_cold, rpc, pk, storage_manager, iterations, val + idx)
+                signed_txs[idx] = _with_retry(sign_store_cold, rpc, pk, storage_manager, iterations, val + idx, gas_limit)
             except RuntimeError as e:
                 sign_errors[idx] = str(e)
 
