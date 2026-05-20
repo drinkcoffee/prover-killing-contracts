@@ -12,6 +12,7 @@ Usage:
 """
 
 import argparse
+import json
 import os
 import re
 import subprocess
@@ -20,11 +21,11 @@ import termios
 import threading
 import time
 import tty
+import urllib.request
 from pathlib import Path
 
 from dotenv import load_dotenv
 from eth_account import Account
-from web3 import Web3
 
 SPEND_AMOUNT_WEI = 500_000_000_000_000_000  # 0.5 IMX
 TX_COST_WEI = 500_000_000_000_000  # 0.0005 IMX
@@ -204,18 +205,18 @@ def sign_store_cold(rpc: str, private_key: str, storage_manager: str, iteration:
 
 
 def batch_submit_signed_txs(rpc: str, signed_txs: list[str]) -> list[tuple[str | None, str | None]]:
-    w3 = Web3(Web3.HTTPProvider(rpc))
-    with w3.batch_requests() as batch:
-        for signed_tx in signed_txs:
-            batch.add(w3.eth.send_raw_transaction(signed_tx))
-        responses = batch.execute()
-    results = []
-    for response in responses:
-        if isinstance(response, Exception):
-            results.append((None, str(response)))
-        else:
-            results.append((response.hex(), None))
-    return results
+    payload = json.dumps([
+        {"jsonrpc": "2.0", "method": "eth_sendRawTransaction", "params": [tx], "id": i}
+        for i, tx in enumerate(signed_txs)
+    ]).encode()
+    req = urllib.request.Request(rpc, data=payload, headers={"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        responses = json.loads(resp.read())
+    responses.sort(key=lambda r: r["id"])
+    return [
+        (None, r["error"].get("message", str(r["error"]))) if "error" in r else (r["result"], None)
+        for r in responses
+    ]
 
 
 def cmd_store_cold(iteration: int, val: int) -> None:
