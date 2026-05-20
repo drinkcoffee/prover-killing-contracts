@@ -157,6 +157,10 @@ def cmd_storage_test_init_part1(batch_size: int) -> None:
         sys.exit(1)
 
 
+def chain_id_from_rpc(rpc: str) -> int:
+    return 13473 if "testnet" in rpc else 13371
+
+
 def store_cold(rpc: str, private_key: str, storageManager: str, iteration: int, val: int) -> str:
     result = subprocess.run(
         [
@@ -185,7 +189,7 @@ def sign_store_cold(rpc: str, private_key: str, storage_manager: str, iteration:
     result = subprocess.run(
         [
             "cast", "mktx",
-            "--rpc-url", rpc,
+            "--chain-id", str(chain_id_from_rpc(rpc)),
             "--private-key", private_key,
             "--priority-gas-price", "10000000000",
             "--gas-price", "10000000100",
@@ -299,7 +303,7 @@ def sign_transfer_imx(rpc: str, private_key: str, to: str, amount_wei: int, nonc
     result = subprocess.run(
         [
             "cast", "mktx",
-            "--rpc-url", rpc,
+            "--chain-id", str(chain_id_from_rpc(rpc)),
             "--private-key", private_key,
             "--gas-price", str(BULK_MAX_FEE),
             "--priority-gas-price", str(BULK_PRIORITY_FEE),
@@ -509,35 +513,21 @@ def cmd_bulk_store_cold(scale: int, iterations: int, val: int) -> None:
     print("\r  Done.              ")
     print()
 
-    print("Returning remaining funds to home account (batch)...")
-    print("  Fetching account balances and nonces...", flush=True)
-    account_addrs = [addr for _, addr in accounts]
-    balances_nonces = batch_get_balances_and_nonces(rpc, account_addrs)
-
-    refund_signed: list[str] = []
-    refund_indices: list[int] = []
-    for i, ((pk, addr), (bal, nonce)) in enumerate(zip(accounts, balances_nonces)):
-        if bal <= TX_COST_WEI:
-            print(f"  {addr}: balance too low ({bal} wei), skipping")
-            continue
-        return_amount = bal - TX_COST_WEI
-        print(f"  ← {addr}  {return_amount / 1e18:.6f} IMX  (nonce {nonce})")
+    print("Returning remaining funds to home account...")
+    for i, (pk, addr) in enumerate(accounts):
+        if i > 0:
+            time.sleep(0.5)
         try:
-            signed = sign_transfer_imx(rpc, pk, home_addr, return_amount, nonce)
-            refund_signed.append(signed)
-            refund_indices.append(i)
+            bal = get_balance_wei(rpc, addr)
+            if bal <= TX_COST_WEI:
+                print(f"  {addr}: balance too low ({bal} wei), skipping")
+                continue
+            return_amount = bal - TX_COST_WEI
+            print(f"  ← {addr}  {return_amount / 1e18:.6f} IMX ...", end=" ", flush=True)
+            tx = _with_retry(transfer_imx, rpc, pk, home_addr, return_amount)
+            print(f"ok  {tx}")
         except RuntimeError as e:
-            print(f"     signing failed: {e}", file=sys.stderr)
-
-    if refund_signed:
-        print(f"Submitting {len(refund_signed)} refund transactions as a batch...", flush=True)
-        refund_results = batch_submit_signed_txs(rpc, refund_signed)
-        for j, (tx, err) in enumerate(refund_results):
-            _, addr = accounts[refund_indices[j]]
-            if tx:
-                print(f"  ← {addr}  ok  {tx}")
-            else:
-                print(f"  ← {addr}  FAILED: {err}", file=sys.stderr)
+            print(f"FAILED: {e}", file=sys.stderr)
     print()
     print("Done.")
 
