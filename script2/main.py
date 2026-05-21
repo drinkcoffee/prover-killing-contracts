@@ -185,11 +185,12 @@ def store_cold(rpc: str, private_key: str, storageManager: str, iteration: int, 
     return result.stdout.strip()
 
 
-def estimate_gas_store_cold(rpc: str, storage_manager: str, iteration: int, val: int) -> int:
+def estimate_gas_store_cold(rpc: str, from_address: str, storage_manager: str, iteration: int, val: int) -> int:
     result = subprocess.run(
         [
             "cast", "estimate",
             "--rpc-url", rpc,
+            "--from", from_address,
             storage_manager,
             "storeCold(uint256,uint256)",
             str(iteration),
@@ -490,7 +491,7 @@ def cmd_bulk_store_cold(scale: int, iterations: int, val: int) -> None:
     if action == "Y":
         # Phase 1: sign all transactions in parallel (staggered to avoid RPC rate limits)
         print(f"Estimating gas for storeCold({iterations}, {val})...", end=" ", flush=True)
-        gas_limit = estimate_gas_store_cold(rpc, storage_manager, iterations, val)
+        gas_limit = estimate_gas_store_cold(rpc, home_addr, storage_manager, iterations, val)
         print(f"{gas_limit}")
         print()
 
